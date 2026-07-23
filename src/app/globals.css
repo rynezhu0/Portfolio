@@ -1,0 +1,1278 @@
+@import "tailwindcss";
+
+/* ─── SST (self-hosted, user-supplied files in /public/fonts/sst) ────── */
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTLight.TTF') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTLightIt.TTF') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTRg.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTRgIt.TTF') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTMedium.TTF') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTBold.TTF') format('truetype');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SST';
+  src: url('/fonts/sst/SSTHeavy.TTF') format('truetype');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── PS4 Dynamic Menu Design System ────────────────────────────────── */
+
+:root {
+  /* Bright PS4 dynamic-menu blues, sampled from the real home screen */
+  --bg: #0E4DA8;
+  --surface: #182580; /* tile fill — deep indigo-blue */
+  --accent: #FFFFFF;
+  --accent-glow: #CFE7FF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D6E6FA;
+  --border-subtle: rgba(255, 255, 255, 0.25);
+
+  /* SST first if the visitor (or a future @font-face) provides it, then the
+     closest freely-licensed fallback (Source Sans 3), then system sans. */
+  --font-sst: 'SST', 'SST Pro', var(--font-sst-fallback), 'Segoe UI', system-ui,
+    sans-serif;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-subtle: var(--border-subtle);
+
+  --font-display: var(--font-sst);
+  --font-mono: var(--font-sst);
+}
+
+/* ─── Base Styles ───────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  /* Deep navy base beneath the ambient canvas — matches the bottom of the
+     blue background gradient so first paint doesn't flash a different color. */
+  background-color: #00052d;
+  color: var(--text-primary);
+  font-family: var(--font-sst);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Focus Styles (Accessibility) ──────────────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── WebGL Canvas Container ────────────────────────────────────────── */
+
+.canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  transform-origin: center center;
+  /* Eased both ways so opening pushes the menu away and closing pulls it back */
+  transition: opacity 0.42s ease, transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* When a content section is open, the whole 3D menu fades and pushes back —
+   the "everything that isn't the tile dissolves away" half of the morph. The
+   opened tile's forward rush is carried by the .morph-panel clone instead. */
+.canvas-container.content-active {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+/* ─── Top Strip ─────────────────────────────────────────────────────── */
+
+.top-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 112px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Transparent — reads as part of the background, like the real PS4 UI.
+     Text centers ~76px down (~9.5% of viewport), matching the reference. */
+  background: none;
+  padding: 40px clamp(24px, 4vw, 64px) 0;
+}
+
+.top-strip-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Span the content box and center vertically so the name lines up with the
+     logo/nav on the left and the résumé/clock on the right. */
+  top: 40px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* RZ monogram used as the home link in the header (left side) */
+.top-logo {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+
+/* ─── Section Content Overlay ───────────────────────────────────────── */
+
+.section-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px clamp(32px, 6vw, 80px) 48px;
+  pointer-events: none;
+}
+
+.section-overlay.active {
+  pointer-events: auto;
+  /* Light scrim so overlay text holds contrast on the bright blue background */
+  background: linear-gradient(
+    180deg,
+    rgba(5, 32, 74, 0.35) 0%,
+    rgba(5, 32, 74, 0.55) 100%
+  );
+}
+
+.section-content {
+  max-width: 960px;
+  width: 100%;
+  transform-origin: center center;
+  /* Arrival: start slightly enlarged + transparent, then settle to 100% and
+     full opacity — the "zooms out while fading in" mirror of the entry push.
+     Gentler + slightly delayed so the content lands after the portal fills. */
+  animation: content-arrive 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+@keyframes content-arrive {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Portal Morph (tile → content transition) ──────────────────────── */
+
+/* A clone of the opened tile. It's a full-viewport box that TransitionLayer
+   first inverts onto the tile (via an inline transform), then releases: it
+   eases past the frame (overshoot) and dissolves, reading as the tile pushing
+   forward to become the doorway into the section. */
+.morph-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: linear-gradient(to top, #121c66 0%, #1e2e9a 100%);
+  pointer-events: none;
+  opacity: 1;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  /* Quick, decisive ease-out on scale; opacity holds solid, then fades late
+     so the content revealed behind it crossfades in cleanly. */
+  transition:
+    transform 0.44s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease 0.16s;
+}
+
+.morph-panel.playing {
+  transform: scale(1.15);
+  opacity: 0;
+}
+
+/* ─── Tile Grid Browser (Projects / Experience) ─────────────────────── */
+
+/* These pages need more horizontal room than the centred text sections. */
+.section-content--wide {
+  max-width: 1200px;
+}
+
+/* Grid pages clear the persistent top bar (~112px) and leave room for the
+   Back button below. The top/bottom padding sum matches VIEWPORT_MARGIN in
+   TileGridBrowser so the 3-row grid never runs into either. */
+.section-overlay--wide {
+  padding-top: 120px;
+  padding-bottom: 88px;
+}
+
+.grid-browser {
+  display: flex;
+  gap: clamp(24px, 4vw, 56px);
+  width: 100%;
+  align-items: center;
+}
+
+/* Left: the scroll viewport. It shows at least three rows (max-height is set
+   in TileGridBrowser to exactly three rows) and, when there are more tiles,
+   free-scrolls the whole grid — the wheel and this scrollbar move the tiles,
+   not the selection. `direction: rtl` puts the scrollbar on the *left* edge;
+   the grid inside flips back to ltr so the tile order is unaffected. */
+.grid-browser__scroll {
+  flex: 1 1 56%;
+  max-width: 628px; /* 620 grid + ~8 for the scrollbar, so tiles keep their size */
+  overflow-y: auto;
+  direction: rtl;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) rgba(255, 255, 255, 0.06);
+}
+
+.grid-browser__scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.grid-browser__scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+
+.grid-browser__scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.32);
+  border-radius: 4px;
+}
+
+.grid-browser__scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* The 3-column grid itself, back in normal left-to-right flow. */
+.grid-browser__tiles {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-content: start;
+  /* Vertical breathing room so the hover lift isn't clipped at the edges */
+  padding: 4px 0;
+  /* A little gap between the tiles and the left scrollbar */
+  padding-left: 8px;
+}
+
+/* Right: the selected tile's description + links, divided by a hairline. */
+.grid-browser__detail {
+  flex: 1 1 44%;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding-left: clamp(12px, 2.5vw, 36px);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.grid-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  /* Same fill/gradient as the main-menu tiles */
+  background: linear-gradient(to top, #121c66 0%, #1e2e9a 100%);
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.18s ease;
+}
+
+.grid-tile:hover {
+  transform: translateY(-2px);
+}
+
+/* Selected tile pops via its ring (no scale — a scale would clip against the
+   scroll container's edges). */
+.grid-tile.selected {
+  z-index: 1;
+}
+
+.grid-tile:focus-visible {
+  outline: none;
+}
+
+.grid-tile-icon {
+  width: 32%;
+  height: auto;
+}
+
+/* Artwork tiles: the item's own colour fills the face edge-to-edge (set inline
+   from ProjectsContent / ExperienceContent) and the logo sits large on top.
+   Constrained on both axes so portrait marks like the McMaster crest scale to
+   fit rather than being cropped. */
+.grid-tile-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 74%;
+  height: 74%;
+}
+
+.grid-tile-art > * {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Selected ring — the same pulsing white border as the main menu tiles. */
+.grid-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 4px solid #ffffff;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.grid-tile.selected::after {
+  opacity: 1;
+  animation: tile-border-pulse 4s ease-in-out infinite;
+}
+
+/* Detail panel — re-keyed on selection so this fade replays each time. */
+.grid-detail {
+  width: 100%;
+  animation: detail-fade 0.28s ease;
+}
+
+@keyframes detail-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.grid-detail-title {
+  margin: 0 0 6px;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.grid-detail-company {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: var(--accent-glow);
+}
+
+.grid-detail-meta {
+  margin: 0 0 18px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.grid-detail-desc {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.grid-detail-image {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  margin: 0 0 20px;
+}
+
+.grid-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.grid-chip {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--accent-glow);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+}
+
+.grid-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.grid-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px 9px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #ffffff;
+  text-decoration: none;
+  background: rgba(43, 111, 224, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+/* Slightly dimmed so the label leads and the mark reads as a cue, not a button
+   of its own; it brightens with the chip on hover. */
+.grid-link-icon {
+  flex: 0 0 auto;
+  opacity: 0.8;
+  transition: opacity 0.18s ease;
+}
+
+.grid-link:hover .grid-link-icon {
+  opacity: 1;
+}
+
+.grid-link:hover {
+  background: rgba(43, 111, 224, 0.35);
+  border-color: var(--accent);
+}
+
+/* Narrow / short screens: stack the detail beneath the grid. */
+@media (max-width: 900px) {
+  .grid-browser {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grid-browser__tiles {
+    max-width: none;
+  }
+
+  .grid-browser__detail {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-left: 0;
+    padding-top: 24px;
+  }
+}
+
+/* ─── About page: intro + quick-stats column ────────────────────────── */
+
+.about-layout {
+  display: flex;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+  width: 100%;
+}
+
+.about-intro {
+  flex: 1 1 56%;
+  min-width: 0;
+  max-width: 560px;
+}
+
+/* A compact label/value table for quick stats + current status. Rows are
+   divided by hairlines and set in a mono face for the "technical readout"
+   look, tinted to the site's blue/white palette. */
+.about-stats {
+  flex: 1 1 44%;
+  min-width: 0;
+  align-self: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 40px);
+  padding: 18px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stat-label {
+  flex: 0 0 76px;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(214, 230, 250, 0.5);
+}
+
+.stat-value {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.stat-value--accent {
+  color: var(--accent-glow);
+}
+
+/* Small "available" square, like the status marker in the reference. */
+.status-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-right: 11px;
+  background: #5fd08a;
+  box-shadow: 0 0 8px rgba(95, 208, 138, 0.55);
+}
+
+.stat-link {
+  color: var(--accent-glow);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(207, 231, 255, 0.4);
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.stat-link:hover {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+/* Stack the stats under the intro on narrow screens. */
+@media (max-width: 820px) {
+  .about-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .about-intro {
+    max-width: none;
+  }
+}
+
+/* ─── Contact ───────────────────────────────────────────────────────── */
+
+/* Left-aligned directory: a heading over a label/value table. Set in SST like
+   the rest of the site, with the About stats' hairline rhythm. */
+.contact-layout {
+  width: 100%;
+  text-align: left;
+}
+
+/* Matches the other section headings (font-display / 4xl / semibold). */
+.contact-heading {
+  margin: 0;
+  font-family: var(--font-sst);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.contact-table {
+  margin-top: clamp(28px, 5vh, 48px);
+  font-family: var(--font-sst);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.contact-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: clamp(16px, 3vw, 40px);
+  padding: 16px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.contact-row-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(214, 230, 250, 0.5);
+}
+
+/* The icon tracks the row's hover state via the shared .contact-row parent. */
+.contact-row-icon {
+  flex: 0 0 auto;
+  color: rgba(214, 230, 250, 0.65);
+  transition: color 0.18s ease;
+}
+
+.contact-row:hover .contact-row-icon {
+  color: var(--accent-glow);
+}
+
+/* Values keep their own casing — they're names and handles, not labels. */
+.contact-row-value {
+  min-width: 0;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-align: right;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+a.contact-row-value {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+a.contact-row-value:hover {
+  color: var(--accent-glow);
+  border-bottom-color: rgba(207, 231, 255, 0.5);
+}
+
+.contact-arrow {
+  margin-left: 0.5em;
+  opacity: 0.6;
+}
+
+a:hover > .contact-arrow {
+  opacity: 1;
+}
+
+/* Outlined action, matching the tile chrome rather than a filled button. */
+.contact-resume {
+  display: inline-flex;
+  align-items: center;
+  margin-top: clamp(28px, 5vh, 48px);
+  padding: 14px 22px;
+  font-family: var(--font-sst);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.contact-resume:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+/* Narrow screens: let each row stack so long values keep their own line. */
+@media (max-width: 560px) {
+  .contact-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .contact-row-value {
+    text-align: left;
+  }
+}
+
+/* ─── PS4-style Tiles (inside drei <Html>) ──────────────────────────── */
+
+.tile-root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  /* Slight dark-to-light vertical gradient centered on #182580 */
+  background: linear-gradient(to top, #121c66 0%, #1e2e9a 100%);
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  /* Width/height are written per-frame from the damped 3D scale (see
+     Tile.tsx) — no size transition here, or the two would fight. */
+  transition: opacity 0.3s ease;
+}
+
+.tile-root.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Icon scales with the tile face instead of jumping between fixed sizes */
+.tile-root .tile-icon-svg {
+  width: 34%;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+/* When focused, the Start strip occupies the bottom 20% of the tile, which
+   makes the centered icon read as low — raise it so it sits centered in the
+   visible area above the strip. */
+.tile-root.focused .tile-icon-svg {
+  transform: translateY(-30%);
+}
+
+/* Large artwork (the RZ logo on About Me). Sized to the tile's width so it
+   fills the face horizontally with the tile gradient showing above and below —
+   nothing is cropped. Being a % of the face, it grows and shrinks in lockstep
+   with the damped tile scale, so focus/blur reads as one continuous motion. */
+.tile-root .tile-art-svg {
+  width: 84%;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+/* The shift is much smaller than the small icons' because the art is tall —
+   just enough to clear the Start strip. */
+.tile-root.focused .tile-art-svg {
+  transform: translateY(-9%);
+}
+
+/* Focused tile border: a white ring layered above everything in the tile
+   (including the Start strip, so no segment of it ever looks dimmed).
+   It lives on every tile at opacity 0 and crossfades over 400ms as focus
+   moves. While focused, it pulses every 3 seconds: the ring dips to a
+   bright light gray, and a second ring ripples outward from it, then
+   everything sits static until the next pulse — like the real PS4 menu. */
+.tile-root::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 4px solid #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* The pulse animations run on a shared global clock: --pulse-delay (set
+   per-frame-of-render in Tile.tsx) rewinds each animation to where the
+   global 4s cycle currently is, so focusing a new tile joins the rhythm
+   mid-cycle instead of pulsing immediately on every focus change. */
+.tile-root.focused::after,
+.tile-root:focus-visible::after {
+  opacity: 1;
+  animation: tile-border-pulse 4s ease-in-out infinite;
+  animation-delay: var(--pulse-delay, 0ms);
+}
+
+/* Ripple ring emitted at each pulse — travels inward from the border so it
+   stays contained within the border's edges. */
+.tile-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 4px solid #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tile-root.focused::before {
+  animation: tile-border-ripple 4s ease-out infinite;
+  animation-delay: var(--pulse-delay, 0ms);
+}
+
+@keyframes tile-border-pulse {
+  0%,
+  100% {
+    border-color: #ffffff;
+  }
+  4% {
+    border-color: #c2cede;
+  }
+  11% {
+    border-color: #ffffff;
+  }
+}
+
+@keyframes tile-border-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  3% {
+    opacity: 0.85;
+  }
+  20% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+.tile-root:focus-visible {
+  outline: none;
+}
+
+/* ─── Boot Sequence (DOM side) ──────────────────────────────────────── */
+
+/* Tiles stay invisible until the boot timeline finishes… */
+.tile-root.boot-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* …then stagger in: fade + slide from the right + scale 0.9 → 1.0.
+   animation-fill-mode 'both' holds the hidden first frame through each
+   tile's --enter-delay so the stagger reads cleanly. */
+.tile-root.boot-enter {
+  animation: tile-enter 0.45s cubic-bezier(0.22, 0.9, 0.34, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes tile-enter {
+  from {
+    opacity: 0;
+    transform: translateX(48px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Full-screen startup overlay. Its black backdrop dissolves to transparent
+   when the welcome stage begins, revealing the ambient scene beneath. */
+.boot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background-color: #000000;
+  transition: background-color 1.2s ease;
+}
+
+.boot-overlay.stage-welcome,
+.boot-overlay.stage-exit,
+.boot-overlay.stage-handoff {
+  background-color: transparent;
+}
+
+/* RZ monogram, centered on the boot screen. */
+.boot-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 168px;
+  color: #ffffff;
+  opacity: 0;
+  /* transform/opacity are driven imperatively during the exit flight + handoff
+     (see BootOverlay); this only smooths the initial fade-in. */
+  transition: opacity 0.5s ease;
+}
+
+.boot-logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Logo fades in and holds while it waits for the "power on" press… */
+.stage-logo .boot-logo {
+  animation: boot-logo-in 1s ease 0.3s forwards;
+}
+
+/* …then stays fully visible through the background fade, the welcome hold, and
+   its flight to the top bar (the handoff cross-fade is applied inline). */
+.stage-welcome .boot-logo,
+.stage-exit .boot-logo,
+.stage-handoff .boot-logo {
+  opacity: 1;
+}
+
+@keyframes boot-logo-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* "Press any button to power on" prompt under the logo (logo stage only) */
+.boot-logo-prompt {
+  position: absolute;
+  top: calc(50% + 90px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.stage-logo .boot-logo-prompt {
+  animation:
+    boot-logo-in 0.8s ease 1s forwards,
+    boot-sub-pulse 2.6s ease-in-out 1.8s infinite;
+}
+
+/* Welcome copy, positioned like the PS5 user-select screen */
+.boot-welcome {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stage-welcome .boot-welcome {
+  opacity: 1;
+  transition: opacity 0.9s ease 0.5s;
+}
+
+.stage-exit .boot-welcome {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.boot-welcome-title {
+  position: absolute;
+  top: 17%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-size: 44px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: #f4f6fa;
+}
+
+@keyframes boot-sub-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ─── Sound Menu (bottom-right) ─────────────────────────────────────── */
+
+.sound-menu {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.sound-menu-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(10, 20, 45, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.sound-menu-button:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.sound-panel {
+  min-width: 210px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(10, 20, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  animation: sound-panel-in 0.16s ease;
+}
+
+@keyframes sound-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sound-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sound-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sound-switch {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  /* Off: muted grey track. On: a distinct blue so the white knob reads. */
+  background: rgba(255, 255, 255, 0.22);
+  position: relative;
+  transition: background 0.18s ease;
+}
+
+.sound-switch.on {
+  background: #2b6fe0;
+}
+
+.sound-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.18s ease;
+}
+
+.sound-switch.on .sound-knob {
+  transform: translateX(16px);
+}
+
+/* Bottom "Start" strip on the focused tile, like the real PS4 menu */
+.tile-start {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e5ddb;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  z-index: 1;
+}
+
+/* Section/item name hanging off the focused tile's bottom-right corner */
+.tile-label {
+  color: #ffffff;
+  font-size: 36px;
+  /* PS4 labels are set in SST Light — regular/semibold reads too heavy */
+  font-weight: 300;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
+  transform: translate(50%, 50%);
+  animation: tile-label-in 0.3s ease;
+}
+
+@keyframes tile-label-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Back Button ───────────────────────────────────────────────────── */
+
+.back-button {
+  position: fixed;
+  bottom: 32px;
+  left: clamp(24px, 4vw, 64px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(20, 27, 46, 0.8);
+  border: 1px solid rgba(139, 147, 167, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(43, 111, 224, 0.15);
+  border-color: var(--accent);
+}
+
+.back-button:focus-visible {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: 2px;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 147, 167, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 147, 167, 0.5);
+}
+
+/* ─── Reduced Motion ────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Mobile Fallback Carousel ──────────────────────────────────────── */
+
+.mobile-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 16px;
+  padding: 0 24px;
+  scrollbar-width: none;
+}
+
+.mobile-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-carousel-tile {
+  flex: 0 0 280px;
+  scroll-snap-align: center;
+  background: var(--surface);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 350px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.mobile-carousel-tile:focus-visible,
+.mobile-carousel-tile:active {
+  border-color: var(--accent-glow);
+}
